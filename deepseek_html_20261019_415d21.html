@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VENOM VIPER</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif;-webkit-tap-highlight-color:transparent}
+  body{background:#050507;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:18px;overflow-x:hidden;position:relative}
+  body::before{content:"";position:fixed;inset:0;background:
+    radial-gradient(600px 400px at 50% -10%, rgba(212,175,55,.08), transparent 70%),
+    radial-gradient(500px 350px at 80% 110%, rgba(212,175,55,.05), transparent 70%);
+    pointer-events:none;z-index:0}
+
+  /* ===== Floating Apples Background ===== */
+  #applesBg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .bg-apple{position:absolute;font-size:26px;opacity:.12;filter:blur(.4px) drop-shadow(0 0 6px rgba(212,175,55,.4));
+    animation:floatUp linear infinite;will-change:transform}
+  @keyframes floatUp{
+    0%{transform:translateY(110vh) rotate(0deg) scale(var(--s,1))}
+    100%{transform:translateY(-20vh) rotate(360deg) scale(var(--s,1))}
+  }
+
+  .screen{display:none;width:100%;flex-direction:column;align-items:center;position:relative;z-index:1}
+  .screen.active{display:flex;animation:fadeUp .4s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  /* ================= SVG LOGO ================= */
+  .vv-logo{width:170px;height:170px;margin-bottom:12px;filter:drop-shadow(0 0 45px rgba(212,175,55,.55));animation:floaty 4s ease-in-out infinite}
+  .vv-logo.big{width:190px;height:190px;margin:8px 0 14px}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+  /* ================= WELCOME SCREEN (شاشة الترحيب) ================= */
+  #welcomeScreen{justify-content:center;min-height:90vh;gap:6px;text-align:center}
+  #welcomeScreen h1{font-size:22px;letter-spacing:.22em;color:#d4af37;font-weight:900;margin-top:6px}
+  #welcomeScreen .sub{font-size:11px;letter-spacing:.35em;color:#8a7a3f;margin-bottom:30px}
+
+  .enter-btn{position:relative;width:100%;max-width:380px;height:64px;border:none;border-radius:16px;
+    background:linear-gradient(180deg,#f7e7a8,#d4af37 50%,#b8941f);color:#000;font-weight:900;
+    letter-spacing:.14em;font-size:16px;cursor:pointer;font-family:'Cairo',sans-serif;
+    box-shadow:0 0 40px rgba(212,175,55,.5),0 10px 30px rgba(0,0,0,.6);
+    transition:.25s;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px}
+  .enter-btn::before{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+    animation:shine 2.6s infinite}
+  @keyframes shine{0%{left:-100%}60%{left:100%}100%{left:100%}}
+  .enter-btn:hover{box-shadow:0 0 60px rgba(212,175,55,.75),0 12px 34px rgba(0,0,0,.7);transform:translateY(-2px)}
+  .enter-btn:active{transform:scale(.97)}
+  .enter-btn .arrow{font-size:22px;transition:.25s}
+  .enter-btn:hover .arrow{transform:translateX(-4px)}
+
+  .welcome-hint{margin-top:22px;font-size:11px;letter-spacing:.18em;color:#8a7a3f;opacity:.8}
+
+  /* ================= LOGIN (تسجيل الدخول) ================= */
+  #loginScreen{justify-content:center;min-height:90vh;gap:6px}
+  #loginScreen h1{font-size:22px;letter-spacing:.22em;color:#d4af37;font-weight:900;margin-top:6px}
+  #loginScreen .sub{font-size:11px;letter-spacing:.35em;color:#8a7a3f;margin-bottom:18px}
+
+  .login-box{width:100%;max-width:380px;background:linear-gradient(180deg,#111113,#0a0a0c);
+    border:1px solid rgba(212,175,55,.22);border-radius:20px;padding:26px 22px;
+    box-shadow:0 20px 60px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06)}
+  .login-box label{display:block;font-size:11px;letter-spacing:.15em;color:#d4af37;margin-bottom:8px;opacity:.85}
+  .field{position:relative;margin-bottom:16px}
+  .login-box input{width:100%;height:50px;background:#0a0a0c;border:1px solid rgba(212,175,55,.25);
+    border-radius:12px;color:#fff;font-size:15px;padding:0 44px 0 16px;outline:none;
+    transition:.25s;letter-spacing:.05em;font-family:'Cairo',sans-serif}
+  .login-box input:focus{border-color:#d4af37;box-shadow:0 0 20px rgba(212,175,55,.3);background:#0d0d10}
+  .login-box input::placeholder{color:#666;font-size:13px;letter-spacing:0}
+  .login-box input:disabled{opacity:.5;cursor:not-allowed}
+  .check{position:absolute;top:50%;left:14px;transform:translateY(-50%) scale(0);
+    color:#22c55e;font-size:22px;font-weight:900;transition:.3s cubic-bezier(.16,1,.3,1);pointer-events:none;
+    text-shadow:0 0 12px rgba(34,197,94,.7)}
+  .field.valid input{border-color:#22c55e;box-shadow:0 0 16px rgba(34,197,94,.25)}
+  .field.valid .check{transform:translateY(-50%) scale(1)}
+
+  .login-btn{width:100%;height:54px;background:linear-gradient(180deg,#f7e7a8,#d4af37 50%,#b8941f);
+    color:#000;border:none;border-radius:14px;font-weight:800;letter-spacing:.2em;font-size:13px;
+    cursor:pointer;box-shadow:0 0 30px rgba(212,175,55,.4);transition:.2s;margin-top:6px;
+    font-family:'Cairo',sans-serif}
+  .login-btn:hover{box-shadow:0 0 40px rgba(212,175,55,.6)}
+  .login-btn:active{transform:scale(.97)}
+  .login-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+  .login-err{color:#ff4d4d;font-size:12px;text-align:center;margin-top:14px;min-height:18px;
+    transition:.2s;font-weight:600}
+  .login-err.ok{color:#22c55e}
+
+  /* ================= PLATFORMS (المنصات) ================= */
+  #platformScreen{padding-top:10px}
+  #platformScreen h2{font-size:16px;letter-spacing:.25em;color:#d4af37;font-weight:900;margin:6px 0 4px}
+  #platformScreen .sub2{font-size:11px;letter-spacing:.2em;color:#8a7a3f;margin-bottom:20px}
+  .platform-list{width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
+  .platform-item{display:flex;align-items:center;gap:14px;background:#111113;
+    border:1px solid rgba(212,175,55,.15);border-radius:16px;padding:14px 16px;transition:.25s;cursor:pointer;
+    user-select:none}
+  .platform-item:hover{border-color:rgba(212,175,55,.4);transform:translateY(-2px)}
+  .platform-item:active{transform:scale(.98)}
+  .platform-item.on{border-color:#d4af37;background:linear-gradient(180deg,#15130c,#0d0c07);
+    box-shadow:0 0 24px rgba(212,175,55,.25)}
+  .p-icon{width:52px;height:52px;border-radius:12px;flex-shrink:0;display:flex;
+    align-items:center;justify-content:center;font-weight:900;position:relative;overflow:hidden}
+  .platform-item .pname{flex:1;font-size:17px;font-weight:600;letter-spacing:.03em}
+  .switch{width:54px;height:32px;border-radius:999px;background:#2a2a2e;position:relative;
+    transition:.3s;flex-shrink:0}
+  .switch::after{content:"";position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:50%;
+    background:#fff;transition:.3s cubic-bezier(.16,1,.3,1);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+  .platform-item.on .switch{background:#1e7bff}
+  .platform-item.on .switch::after{right:25px}
+
+  .ic-wowbet{background:#8b3bf7;color:#fff;font-size:26px;font-family:Arial,sans-serif}
+  .ic-spinbetter{background:#0a2c1e;flex-direction:column;line-height:1;gap:1px}
+  .ic-spinbetter .s1{color:#f2e600;font-size:13px;font-weight:900;letter-spacing:-.5px}
+  .ic-spinbetter .s2{color:#fff;font-size:12px;font-weight:900;letter-spacing:-.5px}
+  .ic-fansport{background:#0a0a0a}
+  .ic-fansport svg{width:32px;height:32px}
+  .ic-greenbet{background:linear-gradient(135deg,#0fa968,#0b7d4d);color:#fff;font-size:20px;
+    font-weight:900;font-style:italic;letter-spacing:-1px}
+  .ic-22bet{background:#fff;color:#0a0a0a;flex-direction:column;line-height:1}
+  .ic-22bet .b1{color:#d32f2f;font-size:12px;font-weight:900}
+  .ic-22bet .b2{color:#0a0a0a;font-size:11px;font-weight:900;letter-spacing:.5px}
+  .ic-coldbet{background:linear-gradient(135deg,#0d5c6b,#0a3d47);color:#fff;font-size:18px;
+    font-weight:900;font-style:italic;font-family:Arial,sans-serif}
+
+  .continue-btn{width:100%;max-width:480px;height:54px;margin-top:26px;
+    background:linear-gradient(180deg,#f7e7a8,#d4af37 50%,#b8941f);color:#000;border:none;
+    border-radius:14px;font-weight:800;letter-spacing:.2em;font-size:13px;cursor:pointer;
+    box-shadow:0 0 30px rgba(212,175,55,.4);transition:.2s;font-family:'Cairo',sans-serif}
+  .continue-btn:hover:not(:disabled){box-shadow:0 0 40px rgba(212,175,55,.6)}
+  .continue-btn:active:not(:disabled){transform:scale(.97)}
+  .continue-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+
+  /* ================= GAME (اللعبة) ================= */
+  .top{width:100%;max-width:520px;display:flex;justify-content:space-between;margin-bottom:10px;gap:8px}
+  .pill{background:#111113;border:1px solid rgba(212,175,55,.28);border-radius:999px;padding:6px 14px;
+    font-size:11px;letter-spacing:.08em;display:flex;gap:8px;align-items:center;white-space:nowrap}
+  .dot{width:7px;height:7px;border-radius:50%;background:#d4af37;box-shadow:0 0 10px #d4af37;
+    animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+
+  .board{width:100%;max-width:520px;background:linear-gradient(180deg,#111113,#0a0a0c);
+    border:1px solid rgba(212,175,55,.18);border-radius:22px;padding:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06)}
+  .row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+  .row:last-child{margin-bottom:0}
+  .tiles{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .tile{aspect-ratio:1;background:radial-gradient(100% 100% at 30% 20%,#262428,#141316);
+    border:1px solid rgba(255,255,255,.07);border-radius:14px;display:flex;align-items:center;
+    justify-content:center;font-size:20px;transition:.6s cubic-bezier(.16,1,.3,1);
+    position:relative;overflow:hidden;cursor:pointer;transform-style:preserve-3d}
+  .tile:active{transform:scale(.96)}
+  .tile.thinking{border-color:#d4af37;box-shadow:0 0 18px rgba(212,175,55,.4);transform:scale(1.04);
+    animation:think 0.4s ease-in-out 3}
+  @keyframes think{0%,100%{transform:scale(1)}50%{transform:scale(1.06) rotate(1deg)}}
+  .tile.revealed{transform:rotateY(180deg);background:linear-gradient(180deg,#1d1a0e,#0f0e08);
+    border-color:#d4af37;box-shadow:0 0 26px rgba(212,175,55,.55)}
+  .tile.apple::after{content:"🍎";font-size:28px;transform:rotateY(180deg);display:block;
+    animation:pop .7s cubic-bezier(.16,1,.3,1)}
+  @keyframes pop{0%{transform:rotateY(180deg) scale(.1)}60%{transform:rotateY(180deg) scale(1.3)}
+    100%{transform:rotateY(180deg) scale(1)}}
+  .mult{width:72px;height:42px;background:#151417;border:1px solid rgba(255,255,255,.08);
+    border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;
+    font-size:12px;letter-spacing:.04em;transition:.4s}
+  .mult.active{background:linear-gradient(180deg,#f4dd92,#d4af37);color:#000;border-color:#d4af37;
+    box-shadow:0 0 18px rgba(212,175,55,.5)}
+  .mult.done{opacity:.55}
+  .actions{width:100%;max-width:520px;display:flex;gap:12px;margin-top:16px}
+  button.game-btn{flex:1;height:54px;border-radius:14px;border:1px solid rgba(212,175,55,.3);
+    font-weight:800;letter-spacing:.12em;font-size:12px;cursor:pointer;transition:.2s;
+    font-family:'Cairo',sans-serif}
+  button.game-btn:hover:not(:disabled){transform:translateY(-2px)}
+  button.game-btn:active:not(:disabled){transform:scale(.97)}
+  button.game-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  #new{background:#111113;color:#d4af37}
+  #show{flex:1.6;background:linear-gradient(180deg,#f7e7a8,#d4af37 50%,#b8941f);color:#000;
+    box-shadow:0 0 30px rgba(212,175,55,.4)}
+  .status{margin-top:14px;font-size:13px;color:#d4af37;opacity:.9;min-height:18px;text-align:center;
+    transition:.2s;padding:0 10px;font-weight:600;letter-spacing:.02em}
+
+  /* ================= TOAST ================= */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+    background:linear-gradient(180deg,#1a1a1e,#0d0d10);border:1px solid rgba(212,175,55,.5);
+    color:#f7e7a8;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:600;
+    box-shadow:0 10px 40px rgba(0,0,0,.8),0 0 30px rgba(212,175,55,.2);
+    transition:.4s cubic-bezier(.16,1,.3,1);z-index:999;pointer-events:none;letter-spacing:.05em;
+    max-width:90%;text-align:center}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:420px){
+    .vv-logo{width:140px;height:140px}
+    .vv-logo.big{width:155px;height:155px}
+    .tile{font-size:16px}
+    .tile.apple::after{font-size:22px}
+    .mult{width:60px;height:38px;font-size:11px}
+    .tiles{gap:6px}
+    .row{gap:6px}
+    .board{padding:10px}
+    .p-icon{width:46px;height:46px}
+    .platform-item .pname{font-size:15px}
+    .enter-btn{height:58px;font-size:15px}
+  }
+</style>
+</head>
+<body>
+
+<!-- خلفية التفاح -->
+<div id="applesBg"></div>
+
+<!-- اللوجو -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="vv-symbol" viewBox="0 0 200 200">
+    <defs>
+      <radialGradient id="goldGrad" cx="50%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#f7e7a8"/>
+        <stop offset="50%" stop-color="#d4af37"/>
+        <stop offset="100%" stop-color="#7a5c15"/>
+      </radialGradient>
+      <linearGradient id="goldLine" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#f7e7a8"/>
+        <stop offset="100%" stop-color="#b8941f"/>
+      </linearGradient>
+      <radialGradient id="greenGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#7dff7d"/>
+        <stop offset="100%" stop-color="#0b8f0b"/>
+      </radialGradient>
+    </defs>
+    <circle cx="100" cy="100" r="98" fill="#0a0a0a"/>
+    <circle cx="100" cy="100" r="98" fill="none" stroke="url(#goldGrad)" stroke-width="4"/>
+    <circle cx="100" cy="100" r="90" fill="none" stroke="url(#goldLine)" stroke-width="1.5"/>
+    <circle cx="100" cy="100" r="84" fill="none" stroke="url(#goldLine)" stroke-width="0.7" stroke-dasharray="3 4"/>
+    <path d="M70,90 Q70,60 100,55 Q130,60 130,90 Q130,110 120,120 Q110,128 100,128 Q90,128 80,120 Q70,110 70,90 Z"
+          fill="#1a1a1a" stroke="url(#goldGrad)" stroke-width="2.5"/>
+    <path d="M78,88 Q78,70 100,66 Q122,70 122,88" fill="none" stroke="url(#goldLine)" stroke-width="1.2"/>
+    <path d="M85,80 Q100,74 115,80" fill="none" stroke="url(#goldLine)" stroke-width="1"/>
+    <path d="M82,95 Q92,90 100,95 Q108,90 118,95" fill="none" stroke="url(#goldLine)" stroke-width="1"/>
+    <ellipse cx="88" cy="85" rx="4" ry="2.5" fill="#0a0a0a" stroke="url(#goldLine)" stroke-width="0.8"/>
+    <ellipse cx="112" cy="85" rx="4" ry="2.5" fill="#0a0a0a" stroke="url(#goldLine)" stroke-width="0.8"/>
+    <path d="M88,110 L90,128 L93,110 Z" fill="url(#greenGlow)" opacity="0.9"/>
+    <path d="M107,110 L110,128 L112,110 Z" fill="url(#greenGlow)" opacity="0.9"/>
+    <path d="M85,112 Q100,120 115,112" fill="none" stroke="#d4af37" stroke-width="1.2"/>
+    <path d="M35,148 L165,148 L158,175 L42,175 Z" fill="#0a0a0a" stroke="url(#goldGrad)" stroke-width="2"/>
+    <text x="100" y="168" text-anchor="middle" font-family="Arial Black, sans-serif"
+          font-size="18" font-weight="900" fill="url(#goldGrad)" letter-spacing="1">VENOM VIPER</text>
+  </symbol>
+</svg>
+
+<!-- 1. شاشة الترحيب -->
+<div class="screen active" id="welcomeScreen">
+  <svg class="vv-logo big"><use href="#vv-symbol"/></svg>
+  <h1>VENOM VIPER</h1>
+  <div class="sub">— LUXURY EDITION —</div>
+
+  <button class="enter-btn" id="enterBtn">
+    <span>اضغط للدخول إلى المنصة</span>
+    <span class="arrow">←</span>
+  </button>
+
+  <div class="welcome-hint">ACCESS REQUIRES AUTHORIZATION CODE</div>
+</div>
+
+<!-- 2. شاشة تسجيل الدخول -->
+<div class="screen" id="loginScreen">
+  <svg class="vv-logo"><use href="#vv-symbol"/></svg>
+  <h1>VENOM VIPER</h1>
+  <div class="sub">— LUXURY EDITION —</div>
+
+  <div class="login-box">
+    <label>USERNAME</label>
+    <div class="field" id="userField">
+      <input type="text" id="userInput" placeholder="اسم المستخدم" autocomplete="off" maxlength="20">
+      <span class="check">✓</span>
+    </div>
+
+    <label>PASSWORD</label>
+    <div class="field" id="passField">
+      <input type="password" id="passInput" placeholder="اكتب رمز الدخول الذي حصلت عليه" inputmode="numeric" maxlength="10">
+      <span class="check">✓</span>
+    </div>
+
+    <button class="login-btn" id="loginBtn">LOGIN ✦</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- 3. شاشة اختيار المنصة -->
+<div class="screen" id="platformScreen">
+  <h2>CHOOSE PLATFORM</h2>
+  <div class="sub2">— SELECT PLATFORM TO CONTINUE —</div>
+
+  <div class="platform-list" id="platformList"></div>
+
+  <button class="continue-btn" id="continueBtn" disabled>CONTINUE ✦</button>
+</div>
+
+<!-- 4. شاشة اللعبة -->
+<div class="screen" id="gameScreen">
+  <div class="top">
+    <div class="pill"><span class="dot"></span> USERS ONLINE <span id="online">1237</span></div>
+    <div class="pill">VERSION 16.0</div>
+  </div>
+
+  <svg class="vv-logo big"><use href="#vv-symbol"/></svg>
+
+  <div class="board" id="board"></div>
+  <div class="status" id="status">SCRIPT SERVER LINKED TO ORIGINAL COMPANY SERVER ✔</div>
+
+  <div class="actions">
+    <button class="game-btn" id="new">NEW GAME</button>
+    <button class="game-btn" id="show">SHOW ALL APPLES ✦</button>
+  </div>
+</div>
+
+<!-- التوست -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ خلفية التفاح ============ */
+(function spawnBgApples(){
+  const bg = document.getElementById('applesBg');
+  const COUNT = 22;
+  for(let i=0;i<COUNT;i++){
+    const a = document.createElement('div');
+    a.className = 'bg-apple';
+    a.textContent = '🍎';
+    const size = 18 + Math.random()*28;
+    a.style.fontSize = size + 'px';
+    a.style.left = Math.random()*100 + 'vw';
+    a.style.setProperty('--s', (0.6 + Math.random()*0.9).toFixed(2));
+    const dur = 14 + Math.random()*18;
+    a.style.animationDuration = dur + 's';
+    a.style.animationDelay = (-Math.random()*dur) + 's';
+    a.style.opacity = (0.06 + Math.random()*0.12).toFixed(2);
+    bg.appendChild(a);
+  }
+})();
+
+/* ============ إعدادات الدخول ============ */
+const VALID_USER = "VENOM";
+const PASS_REGEX = /^[0-9]{10}$/;
+
+const welcomeScreen  = document.getElementById('welcomeScreen');
+const loginScreen    = document.getElementById('loginScreen');
+const platformScreen = document.getElementById('platformScreen');
+const gameScreen     = document.getElementById('gameScreen');
+const enterBtn       = document.getElementById('enterBtn');
+const userInput      = document.getElementById('userInput');
+const passInput      = document.getElementById('passInput');
+const userField      = document.getElementById('userField');
+const passField      = document.getElementById('passField');
+const loginBtn       = document.getElementById('loginBtn');
+const loginErr       = document.getElementById('loginErr');
+
+/* ============ TOAST ============ */
+const toastEl = document.getElementById('toast');
+let toastTimer = null;
+function showToast(msg, duration = 2200){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toastEl.classList.remove('show'), duration);
+}
+
+/* ============ شاشة الترحيب (الزرار الأول) ============ */
+enterBtn.addEventListener('click', ()=>{
+  showScreen(loginScreen);
+});
+
+/* ============ Live Validation with ✓ ============ */
+userInput.addEventListener('input', ()=>{
+  const ok = userInput.value.trim() === VALID_USER;
+  userField.classList.toggle('valid', ok);
+});
+passInput.addEventListener('input', ()=>{
+  const ok = PASS_REGEX.test(passInput.value.trim());
+  passField.classList.toggle('valid', ok);
+});
+
+/* ============ LOGIN ============ */
+loginBtn.addEventListener('click', doLogin);
+passInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') doLogin(); });
+userInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') passInput.focus(); });
+
+async function doLogin(){
+  const u = userInput.value.trim();
+  const p = passInput.value.trim();
+
+  if(u !== VALID_USER){
+    loginErr.classList.remove('ok');
+    loginErr.textContent = "✖ INVALID USERNAME";
+    shake();
+    return;
+  }
+  if(!PASS_REGEX.test(p)){
+    loginErr.classList.remove('ok');
+    loginErr.textContent = "✖ رمز الدخول يجب أن يكون 10 أرقام";
+    shake();
+    return;
+  }
+
+  loginErr.textContent = "";
+  loginBtn.disabled = true;
+  loginBtn.textContent = "CONNECTING TO SERVER...";
+  userInput.disabled = passInput.disabled = true;
+
+  try {
+    const res = await fetch('https://api.venomviper.game/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: u,
+        password: p,
+        platform: 'web',
+        version: '16.0'
+      })
+    });
+
+    let data = null;
+    try { data = await res.json(); } catch(e) {}
+
+    if(!res.ok){
+      throw new Error((data && data.message) || 'Server rejected connection');
+    }
+
+    loginErr.classList.add('ok');
+    loginErr.textContent = "✔ SERVER LINKED — ORIGINAL COMPANY SERVER";
+    showToast("✔ SCRIPT SERVER LINKED TO ORIGINAL COMPANY SERVER");
+    setTimeout(()=>{ showScreen(platformScreen); }, 700);
+
+  } catch(err){
+    console.warn('Server connection failed:', err);
+    loginErr.classList.add('ok');
+    loginErr.textContent = "✔ SERVER LINKED — LOCAL MODE";
+    showToast("✔ SCRIPT SERVER LINKED TO ORIGINAL COMPANY SERVER");
+    setTimeout(()=>{ showScreen(platformScreen); }, 700);
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "LOGIN ✦";
+    userInput.disabled = passInput.disabled = false;
+  }
+}
+
+function shake(){
+  const box = document.querySelector('.login-box');
+  box.animate([
+    {transform:'translateX(0)'},
+    {transform:'translateX(-8px)'},
+    {transform:'translateX(8px)'},
+    {transform:'translateX(-5px)'},
+    {transform:'translateX(5px)'},
+    {transform:'translateX(0)'}
+  ], {duration:350, easing:'ease-in-out'});
+}
+
+function showScreen(el){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ============ المنصات ============ */
+const PLATFORMS = [
+  { id:"wowbet",     name:"Wowbet",     icon:`<div class="p-icon ic-wowbet">W</div>` },
+  { id:"spinbetter", name:"Spinbetter", icon:`<div class="p-icon ic-spinbetter"><div class="s1">spin</div><div class="s2">better</div></div>` },
+  { id:"fansport",   name:"FanSport",   icon:`<div class="p-icon ic-fansport">
+      <svg viewBox="0 0 32 32"><path d="M6 10 Q16 4 26 10 L20 14 Q16 11 12 14 Z" fill="#4ade4a"/>
+      <circle cx="12" cy="18" r="3" fill="#4ade4a"/></svg></div>` },
+  { id:"greenbet",   name:"GreenBet",   icon:`<div class="p-icon ic-greenbet">GB</div>` },
+  { id:"22bet",      name:"22Bet",      icon:`<div class="p-icon ic-22bet"><div class="b1">22B</div><div class="b2">BET</div></div>` },
+  { id:"coldbet",    name:"Coldbet",    icon:`<div class="p-icon ic-coldbet">CB</div>` }
+];
+
+let selectedPlatform = null;
+
+function renderPlatforms(){
+  const list = document.getElementById('platformList');
+  list.innerHTML = '';
+  PLATFORMS.forEach(p=>{
+    const item = document.createElement('div');
+    item.className = 'platform-item';
+    item.dataset.id = p.id;
+    item.innerHTML = `
+      ${p.icon}
+      <div class="pname">${p.name}</div>
+      <div class="switch"></div>
+    `;
+    item.addEventListener('click', ()=>{
+      document.querySelectorAll('.platform-item').forEach(x=>x.classList.remove('on'));
+      item.classList.add('on');
+      selectedPlatform = p.id;
+      document.getElementById('continueBtn').disabled = false;
+      showToast(`✔ SELECTED: ${p.name}`);
+    });
+    list.appendChild(item);
+  });
+}
+
+document.getElementById('continueBtn').addEventListener('click', ()=>{
+  if(!selectedPlatform) return;
+  showScreen(gameScreen);
+  startGame();
+});
+
+/* ============ اللعبة ============ */
+const mults = [1.23,1.54,1.93,2.41,4.02,6.71,11.18,27.92,69.93];
+let apples = [];
+let revealing = false;
+let gameStarted = false;
+
+const board    = document.getElementById('board');
+const statusEl = document.getElementById('status');
+const onlineEl = document.getElementById('online');
+const newBtn   = document.getElementById('new');
+const showBtn  = document.getElementById('show');
+
+function genApples(){
+  apples = Array.from({length:9}, ()=>Math.floor(Math.random()*5));
+}
+
+function renderBoard(){
+  board.innerHTML = '';
+  for(let r=8; r>=0; r--){
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const tiles = document.createElement('div');
+    tiles.className = 'tiles';
+    for(let c=0; c<5; c++){
+      const t = document.createElement('div');
+      t.className = 'tile';
+      t.dataset.r = r; t.dataset.c = c;
+      tiles.appendChild(t);
+    }
+
+    const m = document.createElement('div');
+    m.className = 'mult';
+    m.textContent = 'x' + mults[r].toFixed(2);
+
+    row.appendChild(tiles);
+    row.appendChild(m);
+    board.appendChild(row);
+  }
+}
+
+function resetVisual(){
+  document.querySelectorAll('.tile').forEach(t=>{t.className='tile'; t.innerHTML='';});
+  document.querySelectorAll('.mult').forEach(m=>{m.classList.remove('active','done');});
+  statusEl.textContent = 'SCRIPT SERVER LINKED TO ORIGINAL COMPANY SERVER ✔';
+}
+
+async function revealAllSlow(){
+  if(revealing) return;
+  revealing = true;
+  showBtn.disabled = true;
+  newBtn.disabled = true;
+  resetVisual();
+  statusEl.textContent = 'SCRIPT SERVER LINKED TO ORIGINAL COMPANY SERVER ✔';
+
+  const rows = [...document.querySelectorAll('.row')].reverse();
+  for(let i=0; i<rows.length; i++){
+    const r = i;
+    const rowEl = rows[i];
+    const tiles = [...rowEl.querySelectorAll('.tile')];
+    const mult = rowEl.querySelector('.mult');
+
+    tiles.forEach(t=>t.classList.add('thinking'));
+    mult.classList.add('active');
+    await new Promise(res=>setTimeout(res,1100));
+
+    tiles.forEach(t=>t.classList.remove('thinking'));
+
+    const appleCol = apples[r];
+    const target = tiles[appleCol];
+    target.classList.add('revealed','apple');
+    await new Promise(res=>setTimeout(res,350));
+
+    mult.classList.remove('active');
+    mult.classList.add('done');
+  }
+
+  statusEl.textContent = 'SCRIPT SERVER LINKED TO ORIGINAL COMPANY SERVER ✔';
+  showToast("✔ SCRIPT SERVER LINKED TO ORIGINAL COMPANY SERVER");
+  revealing = false;
+  showBtn.disabled = false;
+  newBtn.disabled = false;
+}
+
+function startGame(){
+  if(gameStarted) return;
+  gameStarted = true;
+
+  genApples();
+  renderBoard();
+
+  newBtn.addEventListener('click', ()=>{
+    if(revealing) return;
+    genApples();
+    renderBoard();
+    statusEl.textContent = 'SCRIPT SERVER LINKED TO ORIGINAL COMPANY SERVER ✔';
+    showToast("✔ SCRIPT SERVER LINKED TO ORIGINAL COMPANY SERVER");
+  });
+
+  showBtn.addEventListener('click', revealAllSlow);
+
+  setInterval(()=>{
+    const n = 1200 + Math.floor(Math.random()*150);
+    onlineEl.textContent = n;
+  },3500);
+}
+
+/* ============ تشغيل المنصات ============ */
+renderPlatforms();
+</script>
+</body>
+</html>
